@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download String Art App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        .app-icon {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #4a6fa5, #667eea);
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            margin: 0 auto 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            color: #333;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .version {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+
+        .description {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .download-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 18px 50px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+        }
+
+        .download-btn:active {
+            transform: translateY(0);
+        }
+
+        .features {
+            text-align: left;
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .features h3 {
+            color: #4a6fa5;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .features ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .features li {
+            padding: 8px 0;
+            color: #555;
+            display: flex;
+            align-items: center;
+        }
+
+        .features li:before {
+            content: "✓";
+            color: #4a6fa5;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+
+        .instructions {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .instructions h4 {
+            color: #856404;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+
+        .instructions ol {
+            padding-left: 20px;
+            color: #856404;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .info {
+            background: #e7f3ff;
+            border-left: 4px solid #4a6fa5;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .info p {
+            color: #004085;
+            margin: 5px 0;
+            font-size: 0.9rem;
+        }
+
+        .alternative {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+        }
+
+        .alternative p {
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .web-link {
+            color: #4a6fa5;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .web-link:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .app-icon {
+                width: 100px;
+                height: 100px;
+                font-size: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="app-icon">🎨</div>
+        
+        <h1>String Art App</h1>
+        <p class="version">Version 1.0.0 • Android 7.0+</p>
+        
+        <p class="description">
+            Create beautiful geometric string art patterns with this powerful mobile app. 
+            Draw, design, and save your masterpieces!
+        </p>
+
+        <a href="string-art-debug.apk" class="download-btn" download>
+            📥 Download APK (5 MB)
+        </a>
+
+        <div class="features">
+            <h3>✨ Features</h3>
+            <ul>
+                <li>Touch-based drawing with nail layouts</li>
+                <li>Pinch to zoom, two-finger pan</li>
+                <li>Multiple patterns (Circle, Line, Rectangle)</li>
+                <li>Pattern generator algorithm</li>
+                <li>Color palette with 6 colors</li>
+                <li>Grey/Restore layers for complex designs</li>
+                <li>Undo/Redo functionality</li>
+                <li>Save high-resolution images (2000x2000)</li>
+                <li>Fullscreen mode</li>
+                <li>Works offline</li>
+            </ul>
+        </div>
+
+        <div class="instructions">
+            <h4>📱 Installation Instructions</h4>
+            <ol>
+                <li>Tap the download button above</li>
+                <li>Wait for <strong>string-art-debug.apk</strong> to download</li>
+                <li>Open the downloaded APK file</li>
+                <li>If prompted, enable <strong>"Install from unknown sources"</strong></li>
+                <li>Tap <strong>"Install"</strong></li>
+                <li>Open the app and start creating!</li>
+            </ol>
+        </div>
+
+        <div class="info">
+            <p><strong>📦 File Size:</strong> ~5 MB</p>
+            <p><strong>🤖 Requires:</strong> Android 7.0 (API 24) or higher</p>
+            <p><strong>🔒 Permissions:</strong> Storage (for saving images)</p>
+            <p><strong>⚠️ Note:</strong> This is a debug APK. Your device may show a warning - this is normal. Tap "Install anyway".</p>
+        </div>
+
+        <div class="alternative">
+            <p>Prefer to use it in your browser?</p>
+            <a href="index.html" class="web-link">Open Web Version →</a>
+        </div>
+    </div>
+
+    <script>
+        // Track download
+        document.querySelector('.download-btn').addEventListener('click', function() {
+            console.log('APK download initiated');
+            
+            // Show a helpful message
+            setTimeout(() => {
+                alert('Download started! Check your notifications.\n\nAfter download:\n1. Open the APK file\n2. Enable "Install from unknown sources"\n3. Tap Install');
+            }, 500);
+        });
+    </script>
+</body>
+</html>
