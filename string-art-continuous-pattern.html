@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="theme-color" content="#4a6fa5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="String Art">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="manifest.json">
+    <title>String Art Simulator - Mobile</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --primary: #4a6fa5;
+            --primary-dark: #3a5a8a;
+            --success: #28a745;
+            --danger: #dc3545;
+            --light: #f8f9fa;
+            --dark: #343a40;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background: white;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(to right, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 12px 16px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            flex-shrink: 0;
+        }
+
+        .header h1 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .header p {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        /* Toolbar */
+        .toolbar {
+            background: var(--light);
+            padding: 8px;
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            border-bottom: 1px solid #dee2e6;
+            flex-shrink: 0;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+        }
+
+        .toolbar::-webkit-scrollbar {
+            height: 3px;
+        }
+
+        .toolbar::-webkit-scrollbar-thumb {
+            background: #999;
+            border-radius: 2px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            background: var(--primary);
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: transform 0.1s, opacity 0.1s;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        button:active {
+            transform: scale(0.95);
+            opacity: 0.8;
+        }
+
+        button.success { background: var(--success); }
+        button.danger { background: var(--danger); }
+        button.secondary { background: #6c757d; }
+
+        /* Color Palette */
+        .color-palette {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            padding: 0 4px;
+        }
+
+        .color-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            cursor: pointer;
+            transition: transform 0.2s;
+            flex-shrink: 0;
+        }
+
+        .color-btn.active {
+            border-color: var(--dark);
+            transform: scale(1.15);
+        }
+
+        .color-btn:active {
+            transform: scale(1.05);
+        }
+
+        /* Canvas */
+        .canvas-wrapper {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: white;
+            touch-action: none;
+        }
+
+        #canvas-container {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            background: var(--light);
+            padding: 8px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+            gap: 8px;
+            border-top: 1px solid #dee2e6;
+            flex-shrink: 0;
+            font-size: 0.75rem;
+        }
+
+        .status-item {
+            text-align: center;
+        }
+
+        .status-label {
+            color: #6c757d;
+            font-size: 0.65rem;
+            display: block;
+        }
+
+        .status-value {
+            font-weight: 600;
+            color: var(--dark);
+            display: block;
+            margin-top: 2px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            width: 100%;
+            max-width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .modal h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 0.9rem;
+        }
+
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .presets {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .preset-btn {
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .preset-btn:active {
+            background: var(--light);
+            transform: scale(0.97);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: 12px;
+            justify-content: center;
+        }
+
+        /* Info Box */
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid var(--primary);
+            padding: 12px;
+            margin: 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        .info-box h3 {
+            color: var(--primary);
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        .info-box ul {
+            list-style-position: inside;
+            padding-left: 0;
+        }
+
+        .info-box li {
+            margin-bottom: 4px;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .header h1 { font-size: 1.1rem; }
+            .header p { display: none; }
+            button { padding: 8px 10px; font-size: 0.75rem; }
+            .btn-group { gap: 3px; }
+            .toolbar { padding: 6px; gap: 4px; }
+        }
+
+        /* Fullscreen Mode */
+        .app-container.fullscreen .header,
+        .app-container.fullscreen .info-box,
+        .app-container.fullscreen .status-bar {
+            display: none;
+        }
+
+        .app-container.fullscreen .toolbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(248, 249, 250, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .app-container.fullscreen .canvas-wrapper {
+            position: fixed;
+            inset: 0;
+            padding-top: 52px;
+        }
+
+        .app-container.fullscreen {
+            height: 100vh;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🎨 String Art Simulator</h1>
+            <p>Create beautiful geometric patterns</p>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <div class="btn-group">
+                <button id="undo-btn" title="Undo">↶ Undo</button>
+                <button id="redo-btn" title="Redo">↷ Redo</button>
+            </div>
+            <div class="btn-group">
+                <button id="save-btn" class="success" title="Save Image">💾 Save</button>
+                <button id="reset-btn" class="danger" title="Reset">🗑️ Reset</button>
+            </div>
+            <div class="btn-group">
+                <button id="pattern-btn" title="Create Pattern">🔢 Pattern</button>
+                <button id="method-btn" title="Toggle Method">✏️ <span id="method-text">Drag</span></button>
+            </div>
+            <div class="btn-group">
+                <button id="grey-btn" class="secondary" title="Grey Out Existing Lines">⬇️ Grey</button>
+                <button id="restore-btn" class="secondary" title="Restore All Colors">⬆️ Color</button>
+            </div>
+            <div class="btn-group">
+                <button id="zoom-in-btn" title="Zoom In">➕</button>
+                <button id="zoom-out-btn" title="Zoom Out">➖</button>
+                <button id="fullscreen-btn" title="Toggle Fullscreen">⛶ Full</button>
+            </div>
+            <div class="color-palette">
+                <div class="color-btn active" style="background: #4a6fa5" data-color="#4a6fa5"></div>
+                <div class="color-btn" style="background: #dc3545" data-color="#dc3545"></div>
+                <div class="color-btn" style="background: #28a745" data-color="#28a745"></div>
+                <div class="color-btn" style="background: #ffc107" data-color="#ffc107"></div>
+                <div class="color-btn" style="background: #6f42c1" data-color="#6f42c1"></div>
+                <div class="color-btn" style="background: #000000" data-color="#000000"></div>
+            </div>
+        </div>
+
+        <!-- Info -->
+        <div class="info-box">
+            <h3>How to Use:</h3>
+            <ul>
+                <li>Select layout to start</li>
+                <li>Tap/drag between nails to draw</li>
+                <li>Pinch to zoom, two fingers to pan</li>
+                <li>Save your artwork when done</li>
+            </ul>
+        </div>
+
+        <!-- Canvas -->
+        <div class="canvas-wrapper">
+            <div id="canvas-container"></div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-item">
+                <span class="status-label">Nails</span>
+                <span class="status-value" id="nail-count">0</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Lines</span>
+                <span class="status-value" id="line-count">0</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Method</span>
+                <span class="status-value" id="method-status">drag</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Color</span>
+                <span class="status-value" id="color-status">#4a6fa5</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Setup Modal -->
+    <div class="modal active" id="setup-modal">
+        <div class="modal-content">
+            <h2>Setup Your Canvas</h2>
+            
+            <div class="form-group">
+                <label>Layout Type</label>
+                <select id="layout-select">
+                    <option value="circle">Circle</option>
+                    <option value="line">Line</option>
+                    <option value="rectangle">Rectangle</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Number of Nails (1-200)</label>
+                <input type="number" id="nail-input" min="1" max="200" value="50">
+            </div>
+
+            <div class="form-group">
+                <label>Quick Presets</label>
+                <div class="presets">
+                    <div class="preset-btn" data-layout="circle" data-count="36">Circle (36)</div>
+                    <div class="preset-btn" data-layout="rectangle" data-count="40">Rectangle (40)</div>
+                    <div class="preset-btn" data-layout="line" data-count="20">Line (20)</div>
+                    <div class="preset-btn" data-layout="circle" data-count="72">Circle (72)</div>
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button id="start-btn" class="success">Start Creating</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // String Art App - Complete Rebuild
+        class StringArt {
+            constructor() {
+                // Core state
+                this.nails = [];
+                this.lines = [];
+                this.history = [];
+                this.historyIndex = -1;
+                this.lineColors = [];
+                
+                // Drawing state
+                this.startNail = null;
+                this.selectedNails = new Set();
+                this.tempLine = null;
+                this.currentColor = '#4a6fa5';
+                this.drawMode = 'drag'; // 'drag' or 'click'
+                this.greyedLineIndices = new Set(); // Track which lines are greyed
+                
+                // Canvas state
+                this.scale = 1;
+                this.offsetX = 0;
+                this.offsetY = 0;
+                this.canvasW = 0;
+                this.canvasH = 0;
+                
+                // Touch state
+                this.touches = [];
+                this.lastTouchDist = 0;
+                this.lastPanPos = null;
+                this.isPinching = false;
+                
+                // P5 instance
+                this.p5 = null;
+                
+                this.init();
+            }
+
+            init() {
+                this.setupUI();
+                this.attachEvents();
+            }
+
+            setupUI() {
+                // Get UI elements
+                this.modal = document.getElementById('setup-modal');
+                this.layoutSelect = document.getElementById('layout-select');
+                this.nailInput = document.getElementById('nail-input');
+                this.startBtn = document.getElementById('start-btn');
+                
+                // Status elements
+                this.nailCountEl = document.getElementById('nail-count');
+                this.lineCountEl = document.getElementById('line-count');
+                this.methodStatusEl = document.getElementById('method-status');
+                this.colorStatusEl = document.getElementById('color-status');
+                this.methodTextEl = document.getElementById('method-text');
+            }
+
+            attachEvents() {
+                // Setup modal
+                this.startBtn.addEventListener('click', () => this.startApp());
+                
+                document.querySelectorAll('.preset-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const layout = e.target.dataset.layout;
+                        const count = e.target.dataset.count;
+                        this.layoutSelect.value = layout;
+                        this.nailInput.value = count;
+                    });
+                });
+
+                // Toolbar buttons
+                document.getElementById('undo-btn').addEventListener('click', () => this.undo());
+                document.getElementById('redo-btn').addEventListener('click', () => this.redo());
+                document.getElementById('save-btn').addEventListener('click', () => this.saveImage());
+                document.getElementById('reset-btn').addEventListener('click', () => this.reset());
+                document.getElementById('pattern-btn').addEventListener('click', () => this.createPattern());
+                document.getElementById('method-btn').addEventListener('click', () => this.toggleMethod());
+                document.getElementById('zoom-in-btn').addEventListener('click', () => this.zoom(1.2));
+                document.getElementById('zoom-out-btn').addEventListener('click', () => this.zoom(0.8));
+                document.getElementById('fullscreen-btn').addEventListener('click', () => this.toggleFullscreen());
+                document.getElementById('grey-btn').addEventListener('click', () => this.greyExisting());
+                document.getElementById('restore-btn').addEventListener('click', () => this.restoreColors());
+
+                // Color palette
+                document.querySelectorAll('.color-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.currentColor = e.target.dataset.color;
+                        this.updateStatus();
+                    });
+                });
+            }
+
+            startApp() {
+                const count = parseInt(this.nailInput.value);
+                if (count < 1 || count > 200) {
+                    alert('Please enter a number between 1 and 200');
+                    return;
+                }
+
+                const layout = this.layoutSelect.value;
+                this.generateNails(layout, count);
+                this.modal.classList.remove('active');
+                this.initCanvas();
+            }
+
+            generateNails(layout, count) {
+                this.nails = [];
+
+                if (layout === 'circle') {
+                    for (let i = 0; i < count; i++) {
+                        const angle = (2 * Math.PI * i / count) - Math.PI / 2;
+                        this.nails.push({
+                            x: Math.cos(angle),
+                            y: Math.sin(angle)
+                        });
+                    }
+                } else if (layout === 'line') {
+                    for (let i = 0; i < count; i++) {
+                        this.nails.push({
+                            x: count > 1 ? -1 + (2 * i / (count - 1)) : 0,
+                            y: 0
+                        });
+                    }
+                } else if (layout === 'rectangle') {
+                    const perSide = Math.ceil(count / 4);
+                    let added = 0;
+                    
+                    // Top
+                    for (let i = 0; i < perSide && added < count; i++, added++) {
+                        this.nails.push({ x: -1 + (2 * i / (perSide - 1)), y: 1 });
+                    }
+                    // Right
+                    for (let i = 1; i < perSide && added < count; i++, added++) {
+                        this.nails.push({ x: 1, y: 1 - (2 * i / (perSide - 1)) });
+                    }
+                    // Bottom
+                    for (let i = 1; i < perSide && added < count; i++, added++) {
+                        this.nails.push({ x: 1 - (2 * i / (perSide - 1)), y: -1 });
+                    }
+                    // Left
+                    for (let i = 1; i < perSide && added < count; i++, added++) {
+                        this.nails.push({ x: -1, y: -1 + (2 * i / (perSide - 1)) });
+                    }
+                }
+
+                this.updateStatus();
+            }
+
+            initCanvas() {
+                const container = document.getElementById('canvas-container');
+                this.canvasW = container.clientWidth;
+                this.canvasH = container.clientHeight;
+
+                if (this.p5) {
+                    this.p5.remove();
+                }
+
+                const self = this;
+                this.p5 = new p5((p) => {
+                    p.setup = () => {
+                        p.createCanvas(self.canvasW, self.canvasH);
+                    };
+
+                    p.draw = () => {
+                        self.draw(p);
+                    };
+
+                    // Desktop events
+                    p.mousePressed = () => self.handlePointerDown(p);
+                    p.mouseDragged = () => self.handlePointerMove(p);
+                    p.mouseReleased = () => self.handlePointerUp(p);
+
+                    // Mobile events
+                    p.touchStarted = (e) => {
+                        if (e.target === p.canvas) {
+                            self.handleTouchStart(p);
+                            return false;
+                        }
+                    };
+                    p.touchMoved = (e) => {
+                        if (e.target === p.canvas) {
+                            self.handleTouchMove(p);
+                            return false;
+                        }
+                    };
+                    p.touchEnded = (e) => {
+                        if (e.target === p.canvas) {
+                            self.handleTouchEnd(p);
+                            return false;
+                        }
+                    };
+                }, 'canvas-container');
+
+                // Handle resize
+                window.addEventListener('resize', () => {
+                    if (this.p5) {
+                        const cont = document.getElementById('canvas-container');
+                        this.canvasW = cont.clientWidth;
+                        this.canvasH = cont.clientHeight;
+                        this.p5.resizeCanvas(this.canvasW, this.canvasH);
+                    }
+                });
+            }
+
+            draw(p) {
+                p.background(255);
+
+                if (this.nails.length === 0) return;
+
+                p.push();
+                p.translate(this.canvasW / 2 + this.offsetX, this.canvasH / 2 + this.offsetY);
+                const s = this.scale * Math.min(this.canvasW, this.canvasH) / 2.5;
+                p.scale(s);
+
+                // Draw lines
+                p.strokeWeight(0.01);
+                for (let i = 0; i < this.lines.length; i++) {
+                    const [a, b] = this.lines[i];
+                    const n1 = this.nails[a];
+                    const n2 = this.nails[b];
+                    
+                    // Check if this line should be greyed out
+                    if (this.greyedLineIndices.has(i)) {
+                        p.stroke(180, 180, 180, 100); // Light grey with transparency
+                    } else {
+                        const color = this.lineColors[i] || this.currentColor;
+                        p.stroke(color);
+                    }
+                    
+                    p.line(n1.x, n1.y, n2.x, n2.y);
+                }
+
+                // Draw temp line
+                if (this.tempLine && this.startNail !== null) {
+                    p.stroke(100, 100, 100, 150);
+                    p.strokeWeight(0.005);
+                    p.drawingContext.setLineDash([5, 5]);
+                    const n = this.nails[this.startNail];
+                    p.line(n.x, n.y, this.tempLine.x, this.tempLine.y);
+                    p.drawingContext.setLineDash([]);
+                }
+
+                // Draw nails
+                for (let i = 0; i < this.nails.length; i++) {
+                    const nail = this.nails[i];
+                    const isSelected = this.selectedNails.has(i);
+                    const radius = isSelected ? 0.06 : 0.04;
+
+                    p.fill(0);
+                    p.noStroke();
+                    p.circle(nail.x, nail.y, radius * 2);
+
+                    p.fill(255);
+                    p.textAlign(p.CENTER, p.CENTER);
+                    p.textSize(radius * 1.2);
+                    if (i >= 9) p.textSize(radius * 0.9);
+                    p.text(i + 1, nail.x, nail.y);
+                }
+
+                p.pop();
+            }
+
+            // Pointer handling (mouse)
+            handlePointerDown(p) {
+                if (this.isPinching) return;
+                
+                const pos = this.getCanvasPos(p, p.mouseX, p.mouseY);
+                const nail = this.findNearestNail(pos);
+
+                if (nail !== null) {
+                    if (this.drawMode === 'drag') {
+                        this.startNail = nail;
+                        this.selectedNails = new Set([nail]);
+                    } else {
+                        if (this.startNail === null) {
+                            this.startNail = nail;
+                            this.selectedNails = new Set([nail]);
+                        } else {
+                            if (nail !== this.startNail) {
+                                this.addLine(this.startNail, nail);
+                            }
+                            this.cancelDraw();
+                        }
+                    }
+                }
+            }
+
+            handlePointerMove(p) {
+                if (this.isPinching || this.drawMode !== 'drag' || this.startNail === null) return;
+
+                const pos = this.getCanvasPos(p, p.mouseX, p.mouseY);
+                this.tempLine = pos;
+
+                const nail = this.findNearestNail(pos);
+                this.selectedNails = new Set([this.startNail]);
+                if (nail !== null && nail !== this.startNail) {
+                    this.selectedNails.add(nail);
+                }
+            }
+
+            handlePointerUp(p) {
+                if (this.isPinching || this.drawMode !== 'drag' || this.startNail === null) return;
+
+                const pos = this.getCanvasPos(p, p.mouseX, p.mouseY);
+                const nail = this.findNearestNail(pos);
+
+                if (nail !== null && nail !== this.startNail) {
+                    this.addLine(this.startNail, nail);
+                }
+
+                this.cancelDraw();
+            }
+
+            // Touch handling
+            handleTouchStart(p) {
+                const touches = p.touches;
+
+                if (touches.length === 1) {
+                    this.isPinching = false;
+                    this.handlePointerDown(p);
+                } else if (touches.length === 2) {
+                    this.isPinching = true;
+                    this.cancelDraw();
+
+                    const dx = touches[1].x - touches[0].x;
+                    const dy = touches[1].y - touches[0].y;
+                    this.lastTouchDist = Math.sqrt(dx * dx + dy * dy);
+
+                    this.lastPanPos = {
+                        x: (touches[0].x + touches[1].x) / 2,
+                        y: (touches[0].y + touches[1].y) / 2
+                    };
+                }
+            }
+
+            handleTouchMove(p) {
+                const touches = p.touches;
+
+                if (touches.length === 1 && !this.isPinching) {
+                    this.handlePointerMove(p);
+                } else if (touches.length === 2) {
+                    // Pinch zoom
+                    const dx = touches[1].x - touches[0].x;
+                    const dy = touches[1].y - touches[0].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (this.lastTouchDist > 0) {
+                        const zoomFactor = dist / this.lastTouchDist;
+                        if (Math.abs(zoomFactor - 1) > 0.02) {
+                            this.zoom(zoomFactor);
+                        }
+                    }
+                    this.lastTouchDist = dist;
+
+                    // Pan
+                    const center = {
+                        x: (touches[0].x + touches[1].x) / 2,
+                        y: (touches[0].y + touches[1].y) / 2
+                    };
+
+                    if (this.lastPanPos) {
+                        this.offsetX += center.x - this.lastPanPos.x;
+                        this.offsetY += center.y - this.lastPanPos.y;
+                    }
+
+                    this.lastPanPos = center;
+                }
+            }
+
+            handleTouchEnd(p) {
+                const touches = p.touches;
+
+                if (touches.length === 0) {
+                    if (!this.isPinching) {
+                        this.handlePointerUp(p);
+                    }
+                    this.isPinching = false;
+                    this.lastTouchDist = 0;
+                    this.lastPanPos = null;
+                } else if (touches.length === 1) {
+                    this.isPinching = false;
+                    this.lastTouchDist = 0;
+                }
+            }
+
+            getCanvasPos(p, mx, my) {
+                const s = this.scale * Math.min(this.canvasW, this.canvasH) / 2.5;
+                return {
+                    x: (mx - this.canvasW / 2 - this.offsetX) / s,
+                    y: (my - this.canvasH / 2 - this.offsetY) / s
+                };
+            }
+
+            findNearestNail(pos) {
+                let nearest = null;
+                let minDist = 0.15; // Touch-friendly threshold
+
+                for (let i = 0; i < this.nails.length; i++) {
+                    const nail = this.nails[i];
+                    const dx = nail.x - pos.x;
+                    const dy = nail.y - pos.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < minDist) {
+                        minDist = dist;
+                        nearest = i;
+                    }
+                }
+
+                return nearest;
+            }
+
+            addLine(a, b) {
+                if (a === b) return;
+
+                // Add to history
+                if (this.historyIndex < this.history.length - 1) {
+                    this.history = this.history.slice(0, this.historyIndex + 1);
+                    this.lineColors = this.lineColors.slice(0, this.historyIndex + 1);
+                }
+
+                this.history.push([a, b]);
+                this.lineColors.push(this.currentColor);
+                this.historyIndex++;
+                this.lines.push([a, b]);
+
+                this.updateStatus();
+            }
+
+            cancelDraw() {
+                this.startNail = null;
+                this.tempLine = null;
+                this.selectedNails.clear();
+            }
+
+            undo() {
+                if (this.historyIndex >= 0) {
+                    this.historyIndex--;
+                    this.updateFromHistory();
+                }
+            }
+
+            redo() {
+                if (this.historyIndex < this.history.length - 1) {
+                    this.historyIndex++;
+                    this.updateFromHistory();
+                }
+            }
+
+            updateFromHistory() {
+                this.lines = this.historyIndex >= 0 
+                    ? this.history.slice(0, this.historyIndex + 1) 
+                    : [];
+                this.lineColors = this.lineColors.slice(0, this.lines.length);
+                
+                // Remove grey indices that are beyond current line count
+                this.greyedLineIndices = new Set(
+                    Array.from(this.greyedLineIndices).filter(i => i < this.lines.length)
+                );
+                
+                this.updateStatus();
+            }
+
+            toggleMethod() {
+                this.drawMode = this.drawMode === 'drag' ? 'click' : 'drag';
+                this.methodTextEl.textContent = this.drawMode === 'drag' ? 'Drag' : 'Click';
+                this.cancelDraw();
+                this.updateStatus();
+            }
+
+            zoom(factor) {
+                this.scale = Math.max(0.3, Math.min(5, this.scale * factor));
+            }
+
+            createPattern() {
+                if (this.nails.length === 0) {
+                    alert('No nails available');
+                    return;
+                }
+
+                const startX = parseInt(prompt(`Start nail X (1-${this.nails.length}):`, '1')) || 1;
+                const startY = parseInt(prompt(`Start nail Y (1-${this.nails.length}):`, 
+                    String(Math.floor(this.nails.length / 4) + 1))) || Math.floor(this.nails.length / 4) + 1;
+                const incX = parseInt(prompt('X increment:', '1')) || 0;
+                const incY = parseInt(prompt('Y increment:', '3')) || 3;
+
+                const maxN = this.nails.length;
+                
+                // Convert to 0-based indices
+                let currentX = startX - 1;
+                let currentY = startY - 1;
+                
+                // Track starting positions to know when we've completed the pattern
+                const startXPos = currentX % maxN;
+                const startYPos = currentY % maxN;
+                
+                // Start from X position
+                let currentPos = currentX % maxN;
+                let isAtX = true; // true = at X position, false = at Y position
+                
+                let safety = 0;
+                const maxIterations = maxN * 4; // Safety limit
+                
+                // Create continuous string path
+                while (safety < maxIterations) {
+                    let nextPos;
+                    
+                    if (isAtX) {
+                        // We're at an X position, move to Y position
+                        nextPos = currentY % maxN;
+                        
+                        // Draw line from current X to Y
+                        this.addLine(currentPos, nextPos);
+                        
+                        // Now we're at Y position
+                        currentPos = nextPos;
+                        isAtX = false;
+                        
+                        // Increment X for next time we visit X
+                        currentX += incX;
+                        
+                    } else {
+                        // We're at a Y position, move to X position
+                        nextPos = currentX % maxN;
+                        
+                        // Draw line from current Y to X
+                        this.addLine(currentPos, nextPos);
+                        
+                        // Now we're at X position
+                        currentPos = nextPos;
+                        isAtX = true;
+                        
+                        // Increment Y for next time we visit Y
+                        currentY += incY;
+                    }
+                    
+                    safety++;
+                    
+                    // Check if we've returned to start position
+                    // We need to be back at X and both X and Y should be at their starting positions
+                    if (isAtX && 
+                        (currentX % maxN === startXPos) && 
+                        (currentY % maxN === startYPos)) {
+                        break;
+                    }
+                }
+                
+                console.log(`Pattern complete: ${safety} lines drawn`);
+            }
+
+            saveImage() {
+                if (this.nails.length === 0) {
+                    alert('Nothing to save');
+                    return;
+                }
+
+                const size = 2000;
+                const temp = new p5((p) => {
+                    p.setup = () => {
+                        p.createCanvas(size, size);
+                        p.background(255);
+
+                        p.push();
+                        p.translate(size / 2, size / 2);
+                        p.scale(size / 2.5);
+
+                        // Draw lines
+                        p.strokeWeight(0.01);
+                        for (let i = 0; i < this.lines.length; i++) {
+                            const [a, b] = this.lines[i];
+                            const n1 = this.nails[a];
+                            const n2 = this.nails[b];
+                            p.stroke(this.lineColors[i] || this.currentColor);
+                            p.line(n1.x, n1.y, n2.x, n2.y);
+                        }
+
+                        // Draw nails
+                        for (let i = 0; i < this.nails.length; i++) {
+                            const nail = this.nails[i];
+                            p.fill(0);
+                            p.noStroke();
+                            p.circle(nail.x, nail.y, 0.06);
+
+                            p.fill(255);
+                            p.textAlign(p.CENTER, p.CENTER);
+                            p.textSize(0.04);
+                            if (i >= 9) p.textSize(0.032);
+                            p.text(i + 1, nail.x, nail.y);
+                        }
+
+                        p.pop();
+
+                        // Download
+                        const link = document.createElement('a');
+                        link.download = `string-art-${Date.now()}.png`;
+                        link.href = p.canvas.toDataURL('image/png');
+                        link.click();
+
+                        p.remove();
+                    };
+                }, document.createElement('div'));
+            }
+
+            reset() {
+                if (confirm('Clear all lines?')) {
+                    this.lines = [];
+                    this.history = [];
+                    this.lineColors = [];
+                    this.historyIndex = -1;
+                    this.greyedLineIndices.clear();
+                    this.cancelDraw();
+                    this.updateStatus();
+                }
+            }
+
+            greyExisting() {
+                if (this.lines.length === 0) {
+                    alert('No lines to grey out');
+                    return;
+                }
+                
+                // Grey out all current lines
+                for (let i = 0; i < this.lines.length; i++) {
+                    this.greyedLineIndices.add(i);
+                }
+                
+                console.log(`Greyed out ${this.lines.length} lines`);
+            }
+
+            restoreColors() {
+                if (this.greyedLineIndices.size === 0) {
+                    alert('No greyed lines to restore');
+                    return;
+                }
+                
+                // Restore all colors
+                const count = this.greyedLineIndices.size;
+                this.greyedLineIndices.clear();
+                
+                console.log(`Restored colors for ${count} lines`);
+            }
+
+            toggleFullscreen() {
+                const container = document.querySelector('.app-container');
+                const btn = document.getElementById('fullscreen-btn');
+                
+                container.classList.toggle('fullscreen');
+                
+                if (container.classList.contains('fullscreen')) {
+                    btn.innerHTML = '⛶ Exit';
+                    
+                    // Recalculate canvas size for fullscreen
+                    setTimeout(() => {
+                        if (this.p5) {
+                            const cont = document.getElementById('canvas-container');
+                            this.canvasW = cont.clientWidth;
+                            this.canvasH = cont.clientHeight;
+                            this.p5.resizeCanvas(this.canvasW, this.canvasH);
+                        }
+                    }, 100);
+                } else {
+                    btn.innerHTML = '⛶ Full';
+                    
+                    // Recalculate canvas size for normal mode
+                    setTimeout(() => {
+                        if (this.p5) {
+                            const cont = document.getElementById('canvas-container');
+                            this.canvasW = cont.clientWidth;
+                            this.canvasH = cont.clientHeight;
+                            this.p5.resizeCanvas(this.canvasW, this.canvasH);
+                        }
+                    }, 100);
+                }
+            }
+
+            updateStatus() {
+                this.nailCountEl.textContent = this.nails.length;
+                this.lineCountEl.textContent = this.lines.length;
+                this.methodStatusEl.textContent = this.drawMode;
+                this.colorStatusEl.textContent = this.currentColor;
+            }
+        }
+
+        // Start the app
+        window.addEventListener('DOMContentLoaded', () => {
+            new StringArt();
+        });
+    </script>
+</body>
+</html>
+
+    <script>
+        // Register Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker registration failed'));
+            });
+        }
+    </script>
