@@ -1,4 +1,4 @@
-const CACHE_NAME = 'string-art-v' + '20250108-001'; // Update this timestamp when you make changes
+const CACHE_NAME = 'string-art-v' + '20250108-004'; // Update this timestamp when you make changes
 const urlsToCache = [
   'index.html',
   'manifest.json',
